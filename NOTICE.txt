@@ -9,3 +9,6 @@ This version contains modified source code developed by Serco Spa in Frascati.
 
 These changes are slight modifications on UserResource.java and UsersResource.java
 to implement specific use-cases for the Keycloak Admin webapp.
+
+Both the modified files implement a User Data masking within the Admin Webapp
+for permissioned "Keycloak Client Manager" users.
