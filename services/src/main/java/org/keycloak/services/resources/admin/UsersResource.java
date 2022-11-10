@@ -39,6 +39,7 @@ import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.services.ErrorResponse;
 import org.keycloak.services.ForbiddenException;
 import org.keycloak.services.resources.admin.permissions.AdminPermissionEvaluator;
+import org.keycloak.services.resources.admin.permissions.ClientPermissionEvaluator;
 import org.keycloak.services.resources.admin.permissions.UserPermissionEvaluator;
 import org.keycloak.userprofile.UserProfile;
 import org.keycloak.userprofile.UserProfileProvider;
@@ -270,6 +271,7 @@ public class UsersResource {
                                                @QueryParam("briefRepresentation") Boolean briefRepresentation,
                                                @QueryParam("exact") Boolean exact,
                                                @QueryParam("q") String searchQuery) {
+        
         UserPermissionEvaluator userPermissionEvaluator = auth.users();
 
         userPermissionEvaluator.requireQuery();
@@ -282,6 +284,26 @@ public class UsersResource {
                 : SearchQueryUtils.getFields(searchQuery);
 
         Stream<UserModel> userModels = Stream.empty();
+        
+        //Service Provider forcing getUserById
+        if (search != null && !search.equals("") && !realm.getName().equals("master") && !auth.realm().canManageRealm()) {
+            //logger.warn("Service Provider UI research!!!");
+            UserModel userModel =
+                    session.users().getUserById(realm, search.toString());
+            if (userModel != null) {
+                userModels = Stream.of(userModel);
+                return toRepresentation(realm, userPermissionEvaluator, briefRepresentation, userModels);
+            } else {
+                Map<String, String> attributes = new HashMap<>();
+                attributes.put(UserModel.USERNAME, search.trim());
+                if (enabled != null) {
+                    attributes.put(UserModel.ENABLED, enabled.toString());
+                }
+                return searchForUser(attributes, realm, userPermissionEvaluator, briefRepresentation, firstResult,
+                        maxResults, false);
+            }
+        }
+        
         if (search != null) {
             if (search.startsWith(SEARCH_ID_PARAMETER)) {
                 UserModel userModel =
@@ -337,7 +359,6 @@ public class UsersResource {
                     return searchForUser(new HashMap<>(), realm, userPermissionEvaluator, briefRepresentation,
                             firstResult, maxResults, false);
                 }
-
         return toRepresentation(realm, userPermissionEvaluator, briefRepresentation, userModels);
     }
 
@@ -458,7 +479,20 @@ public class UsersResource {
                             ? ModelToRepresentation.toBriefRepresentation(user)
                             : ModelToRepresentation.toRepresentation(session, realm, user);
                     userRep.setAccess(usersEvaluator.getAccess(user));
-                    return userRep;
+                    //Service Provider User Data Masking                    
+                    return serviceProviderUserDataMasking(userRep);
                 });
+    }
+    
+    //Service Provider User Data Masking  
+    private UserRepresentation serviceProviderUserDataMasking(UserRepresentation inputUser) {
+        if (!realm.getName().equals("master") && !auth.realm().canManageRealm()) {          
+            UserRepresentation maskedUser = new UserRepresentation();
+            maskedUser.setId(inputUser.getId());
+            maskedUser.setAccess(inputUser.getAccess());
+            maskedUser.setUsername(inputUser.getUsername());
+            return maskedUser;
+        }
+        return inputUser;
     }
 }

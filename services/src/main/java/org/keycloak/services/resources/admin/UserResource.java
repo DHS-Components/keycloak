@@ -292,7 +292,8 @@ public class UserResource {
             rep.setAttributes(readableAttributes);
         }
 
-        return rep;
+        //Service Provider User Data Masking  
+        return serviceProviderUserDataMasking(rep);
     }
 
     /**
@@ -956,5 +957,17 @@ public class UserResource {
         }
         rep.setLastAccess(Time.toMillis(clientSession.getTimestamp()));
         return rep;
+    }
+    
+    //Service Provider User Data Masking  
+    private UserRepresentation serviceProviderUserDataMasking(UserRepresentation inputUser) {
+        if (!realm.getName().equals("master") && !auth.realm().canManageRealm()) {          
+            UserRepresentation maskedUser = new UserRepresentation();
+            maskedUser.setId(inputUser.getId());
+            maskedUser.setAccess(inputUser.getAccess());
+            maskedUser.setUsername(inputUser.getUsername());
+            return maskedUser;
+        }
+        return inputUser;
     }
 }
