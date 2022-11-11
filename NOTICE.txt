@@ -11,4 +11,4 @@ These changes are slight modifications on UserResource.java and UsersResource.ja
 to implement specific use-cases for the Keycloak Admin webapp.
 
 Both the modified files implement a User Data masking within the Admin Webapp
-for permissioned "Keycloak Client Manager" users.
+for permissioned "Keycloak Client Manager" accounts.
