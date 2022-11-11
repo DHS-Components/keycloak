@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Red Hat, Inc. and/or its affiliates
+ * Copyright Serco Spa and/or its affiliates
  * and other contributors as indicated by the @author tags.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,10 +71,10 @@ import static org.keycloak.models.utils.KeycloakModelUtils.findGroupByPath;
 import static org.keycloak.userprofile.UserProfileContext.USER_API;
 
 /**
- * Base resource for managing users
+ * Base resource for managing users with UserData Masking for "Client Manager" permissioned accounts
  *
  * @resource Users
- * @author <a href="mailto:bill@burkecentral.com">Bill Burke</a>
+ * @author <a href="mailto:daniele.pensa@serco.com">Daniele Pensa</a>
  * @version $Revision: 1 $
  */
 public class UsersResource {
